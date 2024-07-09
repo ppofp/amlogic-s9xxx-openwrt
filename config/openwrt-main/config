@@ -7700,5 +7700,5 @@ CONFIG_PACKAGE_luci-app-linkease=y
 CONFIG_PACKAGE_luci-app-quickstart=y
 CONFIG_PACKAGE_luci-app-unishare=y
 CONFIG_PACKAGE_luci-nginxer=y
-
+CONFIG_PACKAGE_luci-app-oaf=y
 CONFIG_PACKAGE_luci-theme-argon=y
