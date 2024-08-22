@@ -17,7 +17,7 @@ echo "DISTRIB_SOURCECODE='official'" >>package/base-files/files/etc/openwrt_rele
 
 git clone https://github.com/jerrykuku/luci-theme-argon.git package/luci-theme-argon
 
-# git clone https://github.com/destan19/OpenAppFilter.git package/OpenAppFilter 
+git clone https://github.com/destan19/OpenAppFilter.git package/OpenAppFilter 
 
 # Modify default IP（FROM 192.168.1.1 CHANGE TO 192.168.31.4）
 # sed -i 's/192.168.1.1/192.168.31.4/g' package/base-files/files/bin/config_generate
