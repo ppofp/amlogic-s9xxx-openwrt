@@ -11,5 +11,5 @@
 
 # other
 # rm -rf package/lean/{samba4,luci-app-samba4,luci-app-ttyd}
-echo >> feeds.conf.default
-echo 'src-git-full fros https://github.com/openfros/packages.git' >> feeds.conf.default
+# echo >> feeds.conf.default
+# echo 'src-git-full fros https://github.com/openfros/packages.git' >> feeds.conf.default
