@@ -12,8 +12,8 @@
 # other
 # rm -rf package/utils/{ucode,fbtest}
 
-echo >> feeds.conf.default
-echo 'src-git istore https://github.com/linkease/istore;main' >> feeds.conf.default
+# echo >> feeds.conf.default
+# echo 'src-git istore https://github.com/linkease/istore;main' >> feeds.conf.default
 # echo >> feeds.conf.default
 # echo 'src-git-full fros https://github.com/openfros/packages.git' >> feeds.conf.default
 
