@@ -26,6 +26,11 @@ echo "DISTRIB_SOURCECODE='lede'" >>package/base-files/files/etc/openwrt_release
 #
 # ------------------------------- Main source ends -------------------------------
 
+
+git clone https://github.com/ppofp/OpenAppFilter.git package/OpenAppFilter 
+
+
+
 # ------------------------------- Other started -------------------------------
 #
 # Add luci-app-amlogic
