@@ -7433,14 +7433,10 @@ CONFIG_PACKAGE_whereis=y
 # end of Utilities
 
 #增加补充内容
-#CONFIG_PACKAGE_luci-app-ddnsto=y
-#CONFIG_PACKAGE_luci-app-diskman=y
-#CONFIG_PACKAGE_luci-app-istorex=y
-#CONFIG_PACKAGE_luci-app-linkease=y
+
 CONFIG_PACKAGE_luci-app-quickstart=y
-#CONFIG_PACKAGE_luci-app-unishare=y
-#CONFIG_PACKAGE_luci-nginxer=y
 CONFIG_PACKAGE_luci-app-oaf=y
+CONFIG_PACKAGE_luci-app-argon-config=y
 #
 # Xorg
 #
