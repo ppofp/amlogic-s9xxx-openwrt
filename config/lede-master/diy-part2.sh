@@ -31,7 +31,7 @@ git clone https://github.com/ppofp/luci-theme-argon.git package/luci-theme-argon
 
 git clone https://github.com/ppofp/OpenAppFilter.git package/OpenAppFilter 
 
-git clone https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
+#git clone https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 
 git clone https://github.com/animegasan/luci-app-quickstart.git package/luci-app-quickstart
 
