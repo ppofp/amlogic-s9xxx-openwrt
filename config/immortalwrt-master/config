@@ -8177,6 +8177,11 @@ CONFIG_PACKAGE_whereis=y
 # CONFIG_PACKAGE_zyxel-reset is not set
 # end of Utilities
 
+CONFIG_PACKAGE_luci-app-oaf=y
+CONFIG_PACKAGE_appfilter=y
+CONFIG_PACKAGE_kmod-oaf=y
+CONFIG_PACKAGE_luci-theme-argon=y
+
 #
 # Xorg
 #
