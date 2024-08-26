@@ -7442,6 +7442,9 @@ CONFIG_PACKAGE_luci-app-linkease=y
 CONFIG_PACKAGE_luci-app-quickstart=y
 CONFIG_PACKAGE_luci-app-unishare=y
 CONFIG_PACKAGE_luci-nginxer=y
+CONFIG_PACKAGE_appfilter=y
+CONFIG_PACKAGE_kmod-oaf=y
+
 #
 # Xorg
 #
