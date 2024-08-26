@@ -20,6 +20,13 @@ echo "DISTRIB_SOURCECODE='immortalwrt'" >>package/base-files/files/etc/openwrt_r
 #
 # ------------------------------- Main source ends -------------------------------
 
+#增加主题和应用过滤
+git clone https://github.com/ppofp/luci-theme-argon.git package/luci-theme-argon
+
+git clone https://github.com/ppofp/OpenAppFilter.git package/OpenAppFilter 
+
+
+
 # ------------------------------- Other started -------------------------------
 #
 # Add luci-app-amlogic
