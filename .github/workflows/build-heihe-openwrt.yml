@@ -1,4 +1,4 @@
-name: Build OpenWrt
+name: Build OpenWrt heihe
 
 on:
   repository_dispatch:
@@ -20,7 +20,27 @@ on:
         type: choice
         options:
           - all
-          # 其他设备选项...
+          - s905w_s905x_s905mb_s905l3b_s905x2_s905x3_s912_s922x_s922x-ct2000_s922x-reva
+          - s905x3-x88-pro-x3_s912-m8s-pro_s905x-t95_s912-t95z-plus_s905l3-unt400g1_s905lb-r3300l
+          - s905x3
+          - s905x3-2101
+          - s905x3-a100
+          - s905x3-a95xf3
+          - s905x3-a95xf3-gb
+          - s905x3-b
+          - s905x3-h96max
+          - s905x3-hk1
+          - s905x3-ip1001m
+          - s905x3-q1
+          - s905x3-q2
+          - s905x3-tx3
+          - s905x3-tx3-bz
+          - s905x3-ugoosx3
+          - s905x3-whale
+          - s905x3-x88-pro-x3
+          - s905x3-x96air
+          - s905x3-x96air-gb
+          - s905x3-x96max
       openwrt_kernel:
         description: "Select kernel version"
         required: false
@@ -34,6 +54,7 @@ on:
           - 6.6.y
           - 6.1.y_6.6.y
           - 5.15.y_5.10.y
+          - 6.1.38
       auto_kernel:
         description: "Auto use the latest kernel"
         required: false
@@ -43,12 +64,19 @@ on:
         description: "Set the kernel repository"
         required: false
         default: "ophub/kernel"
-        type: string # 允许用户输入自定义的内核仓库URL
-      kernel_url:
-        description: "http://39.107.109.9/6.1.38.tar.gz"
+        type: choice
+        options:
+          - ophub/kernel
+      kernel_usage:
+        description: "Set the tags of the stable kernel."
         required: false
-        default: ""
-        type: string # 新增一个输入，用于指定内核下载URL
+        default: "stable"
+        type: choice
+        options:
+          - stable
+          - flippy
+          - dev
+          - beta
       openwrt_storage:
         description: "Select image storage type."
         required: false
@@ -66,6 +94,11 @@ on:
           - ophub
           - angel
           - ppofp
+      custom_kernel_url:
+        description: "Custom kernel download URL"
+        required: false
+        default: ""
+        type: string
 
 env:
   FEEDS_CONF: config/${{ inputs.source_branch }}/feeds.conf.default
@@ -88,6 +121,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
+          # Clean up previous Docker images and temporary files
           docker rmi $(docker images -q) 2>/dev/null
           [[ -n "${AGENT_TOOLSDIRECTORY}" ]] && sudo rm -rf "${AGENT_TOOLSDIRECTORY}"
           sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android 2>/dev/null
@@ -154,19 +188,29 @@ jobs:
           # Set output information
           echo "build_tag=OpenWrt_${TAGS_NAME}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_OUTPUT}
           echo -e "REPO_URL: [ ${REPO_URL} ]\nREPO_BRANCH: [ ${REPO_BRANCH} ]\nTAGS_NAME: [ ${TAGS_NAME} ]"
-          df -hT ${PWD}
-          echo "REPO_URL=${REPO_URL}" >> ${GITHUB_OUTPUT}
-          echo "TAGS_NAME=${TAGS_NAME}" >> ${GITHUB_OUTPUT}
-          echo "status=success" >> ${GITHUB_OUTPUT}
 
-      - name: Download specified kernel
-        if: ${{ inputs.kernel_url }} != '' && ${{ steps.codes.outputs.status }} == 'success' && !cancelled()
+      - name: Download custom kernel if provided
+        if: ${{ inputs.custom_kernel_url != '' }}
         run: |
-          cd /builder/openwrt
-          echo "Downloading specified kernel from URL: ${{ inputs.kernel_url }}"
-          curl -L ${{ inputs.kernel_url }} -o custom_kernel.tar.gz
-          tar -xzf custom_kernel.tar.gz -C .
-          rm custom_kernel.tar.gz
+          echo "Downloading custom kernel from: ${{ inputs.custom_kernel_url }}"
+          curl -L -o /builder/custom_kernel.tar.gz "${{ inputs.custom_kernel_url }}"
+          mkdir -p /builder/custom_kernel
+          tar -xzf /builder/custom_kernel.tar.gz -C /builder/custom_kernel
+          echo "Custom kernel downloaded and extracted successfully."
+
+      - name: Set kernel version [ ${{ inputs.openwrt_kernel }} ]
+        if: ${{ inputs.kernel_repo == 'ophub/kernel' }}
+        id: kernel
+        working-directory: /builder
+        run: |
+          if [[ "${{ inputs.openwrt_kernel }}" == *"_"* ]]; then
+            KERNEL_1=$(echo "${{ inputs.openwrt_kernel }}" | cut -d'_' -f1)
+            KERNEL_2=$(echo "${{ inputs.openwrt_kernel }}" | cut -d'_' -f2)
+            echo -e "KERNEL_1=${KERNEL_1}\nKERNEL_2=${KERNEL_2}" >> ${GITHUB_ENV}
+          else
+            echo -e "KERNEL_1=${{ inputs.openwrt_kernel }}" >> ${GITHUB_ENV}
+          fi
+          echo "Selected kernel versions: $KERNEL_1 $KERNEL_2"
 
       - name: Load custom feeds
         run: |
@@ -183,19 +227,93 @@ jobs:
 
       - name: Load custom configuration
         run: |
-          [[ -f "${CONFIG_FILE}" ]] && cp -f ${CONFIG_FILE} openwrt/.config
+          [[ -d "files" ]] && mv -f files openwrt/files
+          [[ -e "${CONFIG_FILE}" ]] && cp -f ${CONFIG_FILE} openwrt/.config
           chmod +x ${DIY_P2_SH}
           cd openwrt/
           ${GITHUB_WORKSPACE}/${DIY_P2_SH}
 
-      - name: Build OpenWrt
+      - name: Download package
+        id: package
         run: |
-          cd openwrt
+          cd openwrt/
           make defconfig
-          make -j$(nproc)
+          make download -j8
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
 
-      - name: Save build artifacts
-        uses: actions/upload-artifact@v3
+      - name: Compile the OpenWrt
+        id: compile
+        run: |
+          cd openwrt/
+          echo -e "$(nproc) thread compile"
+          # Custom kernel setup
+          if [[ -d "/builder/custom_kernel" ]]; then
+            echo "Using custom kernel for compilation."
+            # Example of setting custom kernel source directory
+            make kernel_menuconfig KERNEL_SRC=/builder/custom_kernel
+          fi
+          make -j$(($(nproc) + 1)) V=s || make -j1 || make -j1 V=s
+          echo "status=success" >> ${GITHUB_OUTPUT}
+
+      - name: Clear server space
+        id: clean
+        if: ${{ steps.compile.outputs.status }} == 'success' && !cancelled()
+        run: |
+          # Clean up server space
+          cd openwrt/
+          [[ -d "output" ]] || mkdir output
+          cp -f bin/targets/*/*/*rootfs.tar.gz output/
+          cp -f .config output/config
+          rm -rf $(ls . | grep -v "^output$" | xargs) 2>/dev/null
+
+          # Generate sha256sum file
+          cd output/
+          for file in *; do [[ ! -d "${file}" ]] && sha256sum "${file}" >"${file}.sha"; done
+
+      - name: Upload OpenWrt to Release
+        uses: ncipollo/release-action@main
+        if: ${{ steps.clean.outputs.status }} == 'success' && !cancelled()
         with:
-          name: openwrt-build
-          path: openwrt/bin/targets
+          tag: ${{ steps.codes.outputs.build_tag }}
+          artifacts: openwrt/output/*
+          allowUpdates: true
+          removeArtifacts: false
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Packaging OpenWrt
+        if: ${{ steps.clean.outputs.status }} == 'success' && !cancelled()
+        uses: ophub/amlogic-s9xxx-openwrt@main
+        with:
+          openwrt_path: openwrt/output/*rootfs.tar.gz
+          openwrt_board: ${{ inputs.openwrt_board }}
+          openwrt_kernel: ${{ inputs.openwrt_kernel }}
+          auto_kernel: ${{ inputs.auto_kernel }}
+          kernel_repo: ${{ inputs.kernel_repo }}
+          kernel_usage: ${{ inputs.kernel_usage }}
+          builder_name: ${{ inputs.builder_name }}
+
+      - name: Upload the packaged OpenWrt
+        uses: ncipollo/release-action@main
+        if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
+        with:
+          tag: ${{ steps.codes.outputs.build_tag }}
+          artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+          allowUpdates: true
+          removeArtifacts: false
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            ### OpenWrt Image information
+            - Default IP: 192.168.1.1
+            - Default username: root
+            - Default password: password
+            - Default WIFI name: HIGC
+            - Default WIFI password: none
+            ### Install to EMMC
+            - Login to OpenWrt → System → Amlogic Service → Install OpenWrt
+            ### OpenWrt source code
+            - [${{ steps.codes.outputs.TAGS_NAME }}](${{ steps.codes.outputs.REPO_URL }})
+            ### OpenWrt Image Verification
+            - sha256sum
