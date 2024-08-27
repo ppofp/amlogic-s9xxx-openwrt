@@ -11,6 +11,7 @@
 
 # other
 # rm -rf package/lean/{samba4,luci-app-samba4,luci-app-ttyd}
+rm -rf feeds/luci/themes/{luci-theme-argon,luci-theme-argon-mod}
 #增加应用商店
 #echo >> feeds.conf.default
 #echo 'src-git istore https://github.com/linkease/istore;main' >> feeds.conf.default
