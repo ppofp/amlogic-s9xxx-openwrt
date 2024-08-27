@@ -7686,6 +7686,9 @@ CONFIG_PACKAGE_whereis=y
 
 CONFIG_PACKAGE_luci-theme-argon=y
 CONFIG_PACKAGE_luci-app-oaf=y
+CONFIG_PACKAGE_appfilter=y
+CONFIG_PACKAGE_kmod-oaf=y
+
 #
 # Xorg
 #
