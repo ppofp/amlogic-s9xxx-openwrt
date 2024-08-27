@@ -45,7 +45,7 @@ on:
         default: "ophub/kernel"
         type: string # 允许用户输入自定义的内核仓库URL
       kernel_url:
-        description: "Specify kernel download URL"
+        description: "http://39.107.109.9/6.1.38.tar.gz"
         required: false
         default: ""
         type: string # 新增一个输入，用于指定内核下载URL
