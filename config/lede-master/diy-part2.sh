@@ -30,6 +30,7 @@ echo "DISTRIB_SOURCECODE='lede'" >>package/base-files/files/etc/openwrt_release
 #git clone https://github.com/ppofp/luci-theme-argon.git package/luci-theme-argon
 
 git clone https://github.com/ppofp/OpenAppFilter.git package/OpenAppFilter 
+https://github.com/sirpdboy/luci-app-parentcontrol  package/luci-app-parentcontrol
 
 # git clone https://github.com/jerrykuku/luci-app-argon-config.git package/luci-app-argon-config
 
